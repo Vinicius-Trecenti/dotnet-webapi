@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PetShop.Api.DTOs;
 using PetShop.Api.Models;
 using PetShop.Api.Services;
 
@@ -18,7 +19,9 @@ public class ProdutosController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Listar()
     {
-        return Ok(await _service.ListarAsync());
+        var produtos = await _service.ListarAsync();
+        var resposta = produtos.Select(ParaResponse);   // entidade → DTO
+        return Ok(resposta);
     }
 
     [HttpGet("{id}")]
@@ -28,16 +31,25 @@ public class ProdutosController : ControllerBase
         if (produto is null)
             return NotFound();
 
-        return Ok(produto);
+        return Ok(ParaResponse(produto));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Criar(Produto produto)
+    public async Task<IActionResult> Criar(ProdutoRequest request)
     {
+        // DTO de entrada → entidade
+        var produto = new Produto
+        {
+            Nome = request.Nome,
+            Preco = request.Preco,
+            Estoque = request.Estoque
+        };
+
         try
         {
             var criado = await _service.CriarAsync(produto);
-            return CreatedAtAction(nameof(ObterPorId), new { id = criado.Id }, criado);
+            return CreatedAtAction(nameof(ObterPorId),
+                new { id = criado.Id }, ParaResponse(criado));
         }
         catch (ArgumentException ex)
         {
@@ -46,9 +58,16 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Atualizar(int id, Produto produto)
+    public async Task<IActionResult> Atualizar(int id, ProdutoRequest request)
     {
-        produto.Id = id;
+        var produto = new Produto
+        {
+            Id = id,                    // o Id vem da URL, não do corpo
+            Nome = request.Nome,
+            Preco = request.Preco,
+            Estoque = request.Estoque
+        };
+
         try
         {
             if (!await _service.AtualizarAsync(produto))
@@ -70,4 +89,13 @@ public class ProdutosController : ControllerBase
 
         return NoContent();
     }
+
+    // Método auxiliar: converte a entidade no DTO de saída.
+    private static ProdutoResponse ParaResponse(Produto p) => new()
+    {
+        Id = p.Id,
+        Nome = p.Nome,
+        Preco = p.Preco,
+        Estoque = p.Estoque
+    };
 }
