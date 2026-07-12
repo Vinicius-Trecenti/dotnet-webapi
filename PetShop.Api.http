@@ -1,6 +1,42 @@
 @PetShop.Api_HostAddress = http://localhost:5084
 
-GET {{PetShop.Api_HostAddress}}/weatherforecast/
+### Listar (começa vazio)
+GET {{PetShop.Api_HostAddress}}/produtos
 Accept: application/json
 
-###
+### Criar um produto válido
+POST {{PetShop.Api_HostAddress}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Ração Premium 15kg",
+  "preco": 189.90,
+  "estoque": 20
+}
+
+### Criar inválido (preço negativo) — deve dar 400
+POST {{PetShop.Api_HostAddress}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Coleira",
+  "preco": -10,
+  "estoque": 5
+}
+
+### Buscar por id
+GET {{PetShop.Api_HostAddress}}/produtos/1
+Accept: application/json
+
+### Atualizar
+PUT {{PetShop.Api_HostAddress}}/produtos/1
+Content-Type: application/json
+
+{
+  "nome": "Ração Premium 15kg",
+  "preco": 199.90,
+  "estoque": 18
+}
+
+### Remover
+DELETE {{PetShop.Api_HostAddress}}/produtos/1
