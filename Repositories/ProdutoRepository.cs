@@ -1,42 +1,50 @@
 // Repositories/ProdutoRepository.cs
+using PetShop.Api.Data;
 using PetShop.Api.Models;
 
 namespace PetShop.Api.Repositories;
 
 public class ProdutoRepository : IProdutoRepository
 {
-    private readonly List<Produto> _produtos = new();
-    private int _proximoId = 1;
+    private readonly AppDbContext _context;
 
-    public IEnumerable<Produto> Listar() => _produtos;
+    // O DbContext chega pronto via injeção de dependência.
+    public ProdutoRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public IEnumerable<Produto> Listar() => _context.Produtos.ToList();
 
     public Produto? ObterPorId(int id) =>
-        _produtos.FirstOrDefault(p => p.Id == id);
+        _context.Produtos.Find(id);
 
     public Produto Adicionar(Produto produto)
     {
-        produto.Id = _proximoId++;   // o repositório controla o Id
-        _produtos.Add(produto);
-        return produto;
+        _context.Produtos.Add(produto);
+        _context.SaveChanges();   // aqui o dado vai pro banco de verdade
+        return produto;           // o Id agora é gerado pelo banco
     }
 
     public bool Atualizar(Produto produto)
     {
-        var existente = ObterPorId(produto.Id);
+        var existente = _context.Produtos.Find(produto.Id);
         if (existente is null) return false;
 
         existente.Nome = produto.Nome;
         existente.Preco = produto.Preco;
         existente.Estoque = produto.Estoque;
-        return true;   // false = não achou o Id
+        _context.SaveChanges();
+        return true;
     }
 
     public bool Remover(int id)
     {
-        var produto = ObterPorId(id);
+        var produto = _context.Produtos.Find(id);
         if (produto is null) return false;
 
-        _produtos.Remove(produto);
+        _context.Produtos.Remove(produto);
+        _context.SaveChanges();
         return true;
     }
 }

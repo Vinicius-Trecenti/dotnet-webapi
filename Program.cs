@@ -1,12 +1,17 @@
 using PetShop.Api.Repositories;
 using PetShop.Api.Services;
 using Scalar.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using PetShop.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
+
+// Configura o contexto do banco de dados para usar SQLite.
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=petshop.db"));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
