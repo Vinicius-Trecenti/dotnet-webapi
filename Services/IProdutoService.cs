@@ -1,13 +1,12 @@
-// Services/IProdutoService.cs
 using PetShop.Api.Models;
 
 namespace PetShop.Api.Services;
 
 public interface IProdutoService
 {
-    IEnumerable<Produto> Listar();
-    Produto? ObterPorId(int id);
-    Produto Criar(Produto produto);
-    bool Atualizar(Produto produto);
-    bool Remover(int id);
+    Task<IEnumerable<Produto>> ListarAsync();
+    Task<Produto?> ObterPorIdAsync(int id);
+    Task<Produto> CriarAsync(Produto produto);
+    Task<bool> AtualizarAsync(Produto produto);
+    Task<bool> RemoverAsync(int id);
 }

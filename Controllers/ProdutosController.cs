@@ -1,4 +1,3 @@
-// Controllers/ProdutosController.cs
 using Microsoft.AspNetCore.Mvc;
 using PetShop.Api.Models;
 using PetShop.Api.Services;
@@ -6,62 +5,39 @@ using PetShop.Api.Services;
 namespace PetShop.Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]   // vira /produtos
+[Route("[controller]")]
 public class ProdutosController : ControllerBase
 {
     private readonly IProdutoService _service;
 
-    // O Service chega pronto aqui — injeção de dependência de novo.
     public ProdutosController(IProdutoService service)
     {
         _service = service;
     }
 
-    // GET /produtos
     [HttpGet]
-    public IActionResult Listar()
+    public async Task<IActionResult> Listar()
     {
-        return Ok(_service.Listar());
+        return Ok(await _service.ListarAsync());
     }
 
-    // GET /produtos/5
     [HttpGet("{id}")]
-    public IActionResult ObterPorId(int id)
+    public async Task<IActionResult> ObterPorId(int id)
     {
-        var produto = _service.ObterPorId(id);
+        var produto = await _service.ObterPorIdAsync(id);
         if (produto is null)
-            return NotFound();   // 404
+            return NotFound();
 
-        return Ok(produto);      // 200
+        return Ok(produto);
     }
 
-    // POST /produtos
     [HttpPost]
-    public IActionResult Criar(Produto produto)
+    public async Task<IActionResult> Criar(Produto produto)
     {
         try
         {
-            var criado = _service.Criar(produto);
-            // 201 + o header Location apontando pro recurso novo
+            var criado = await _service.CriarAsync(produto);
             return CreatedAtAction(nameof(ObterPorId), new { id = criado.Id }, criado);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);   // 400 — regra de negócio violada
-        }
-    }
-
-    // PUT /produtos/5
-    [HttpPut("{id}")]
-    public IActionResult Atualizar(int id, Produto produto)
-    {
-        produto.Id = id;   // o id vem da URL, não do corpo
-        try
-        {
-            if (!_service.Atualizar(produto))
-                return NotFound();
-
-            return NoContent();   // 204 — deu certo, sem corpo de resposta
         }
         catch (ArgumentException ex)
         {
@@ -69,13 +45,29 @@ public class ProdutosController : ControllerBase
         }
     }
 
-    // DELETE /produtos/5
-    [HttpDelete("{id}")]
-    public IActionResult Remover(int id)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Atualizar(int id, Produto produto)
     {
-        if (!_service.Remover(id))
+        produto.Id = id;
+        try
+        {
+            if (!await _service.AtualizarAsync(produto))
+                return NotFound();
+
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Remover(int id)
+    {
+        if (!await _service.RemoverAsync(id))
             return NotFound();
 
-        return NoContent();   // 204
+        return NoContent();
     }
 }

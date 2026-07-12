@@ -1,4 +1,3 @@
-// Services/ProdutoService.cs
 using PetShop.Api.Models;
 using PetShop.Api.Repositories;
 
@@ -8,31 +7,29 @@ public class ProdutoService : IProdutoService
 {
     private readonly IProdutoRepository _repository;
 
-    // O repositório chega pronto aqui — injeção de dependência.
     public ProdutoService(IProdutoRepository repository)
     {
         _repository = repository;
     }
 
-    public IEnumerable<Produto> Listar() => _repository.Listar();
+    public Task<IEnumerable<Produto>> ListarAsync() => _repository.ListarAsync();
 
-    public Produto? ObterPorId(int id) => _repository.ObterPorId(id);
+    public Task<Produto?> ObterPorIdAsync(int id) => _repository.ObterPorIdAsync(id);
 
-    public Produto Criar(Produto produto)
+    public async Task<Produto> CriarAsync(Produto produto)
     {
         Validar(produto);
-        return _repository.Adicionar(produto);
+        return await _repository.AdicionarAsync(produto);
     }
 
-    public bool Atualizar(Produto produto)
+    public async Task<bool> AtualizarAsync(Produto produto)
     {
         Validar(produto);
-        return _repository.Atualizar(produto);
+        return await _repository.AtualizarAsync(produto);
     }
 
-    public bool Remover(int id) => _repository.Remover(id);
+    public Task<bool> RemoverAsync(int id) => _repository.RemoverAsync(id);
 
-    // Regras de negócio centralizadas num só lugar.
     private static void Validar(Produto produto)
     {
         if (string.IsNullOrWhiteSpace(produto.Nome))

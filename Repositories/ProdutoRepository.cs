@@ -1,4 +1,4 @@
-// Repositories/ProdutoRepository.cs
+using Microsoft.EntityFrameworkCore;
 using PetShop.Api.Data;
 using PetShop.Api.Models;
 
@@ -8,43 +8,43 @@ public class ProdutoRepository : IProdutoRepository
 {
     private readonly AppDbContext _context;
 
-    // O DbContext chega pronto via injeção de dependência.
     public ProdutoRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public IEnumerable<Produto> Listar() => _context.Produtos.ToList();
+    public async Task<IEnumerable<Produto>> ListarAsync() =>
+        await _context.Produtos.ToListAsync();
 
-    public Produto? ObterPorId(int id) =>
-        _context.Produtos.Find(id);
+    public async Task<Produto?> ObterPorIdAsync(int id) =>
+        await _context.Produtos.FindAsync(id);
 
-    public Produto Adicionar(Produto produto)
+    public async Task<Produto> AdicionarAsync(Produto produto)
     {
         _context.Produtos.Add(produto);
-        _context.SaveChanges();   // aqui o dado vai pro banco de verdade
-        return produto;           // o Id agora é gerado pelo banco
+        await _context.SaveChangesAsync();
+        return produto;
     }
 
-    public bool Atualizar(Produto produto)
+    public async Task<bool> AtualizarAsync(Produto produto)
     {
-        var existente = _context.Produtos.Find(produto.Id);
+        var existente = await _context.Produtos.FindAsync(produto.Id);
         if (existente is null) return false;
 
         existente.Nome = produto.Nome;
         existente.Preco = produto.Preco;
         existente.Estoque = produto.Estoque;
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return true;
     }
 
-    public bool Remover(int id)
+    public async Task<bool> RemoverAsync(int id)
     {
-        var produto = _context.Produtos.Find(id);
+        var produto = await _context.Produtos.FindAsync(id);
         if (produto is null) return false;
 
         _context.Produtos.Remove(produto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return true;
     }
 }
